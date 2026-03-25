@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Tap Surge — Denver Games</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{width:100%;height:100%;overflow:hidden;background:#07070f;font-family:'DM Sans',sans-serif;color:#fff;user-select:none;-webkit-user-select:none;}
+
+nav{position:fixed;top:0;left:0;right:0;height:50px;display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;background:rgba(7,7,15,0.95);border-bottom:1px solid rgba(255,255,255,0.06);z-index:100;}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.08em;color:#fff;text-decoration:none;}
+.logo span{color:#e8533a;}
+.back{font-size:12px;color:rgba(255,255,255,0.35);background:none;border:none;font-family:inherit;cursor:pointer;letter-spacing:0.05em;}
+.back:hover{color:#fff;}
+
+#gameArea{position:fixed;top:50px;left:0;right:0;bottom:0;overflow:hidden;}
+
+/* HUD */
+#hud{position:absolute;top:0;left:0;right:0;padding:14px 20px;display:flex;justify-content:space-between;align-items:flex-start;z-index:20;pointer-events:none;}
+.hblock{text-align:center;}
+.hval{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;letter-spacing:0.04em;line-height:1;}
+.hlbl{font-size:10px;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin-top:1px;}
+#scoreEl{text-shadow:0 0 20px rgba(120,220,255,0.7);}
+#bestEl{font-size:1.8rem;color:rgba(255,255,255,0.4);}
+
+/* TIMER BAR */
+#timerBar{position:absolute;top:0;left:0;right:0;height:4px;z-index:25;}
+#timerFill{height:100%;width:100%;transition:width 0.05s linear;border-radius:0 2px 2px 0;}
+
+/* COMBO */
+#comboEl{position:absolute;top:90px;left:50%;transform:translateX(-50%);font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:0.1em;opacity:0;transition:opacity 0.2s;white-space:nowrap;z-index:20;pointer-events:none;}
+
+/* CANVAS */
+canvas{position:absolute;top:0;left:0;width:100%;height:100%;}
+
+/* OVERLAYS */
+.ov{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:50;background:rgba(7,7,15,0.88);backdrop-filter:blur(10px);}
+.ov.hide{display:none;}
+
+.ov-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(3rem,12vw,6rem);letter-spacing:0.04em;line-height:0.9;text-align:center;margin-bottom:0.5rem;}
+.grad{display:block;background:linear-gradient(90deg,#f5c842,#ff6b6b,#a78bfa,#38bdf8,#f5c842);background-size:300%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gs 3s linear infinite;}
+@keyframes gs{to{background-position:300%}}
+.crash{display:block;-webkit-text-fill-color:#ef4444;}
+
+.ov-sub{font-size:14px;color:rgba(255,255,255,0.4);text-align:center;max-width:280px;line-height:1.6;margin-bottom:2rem;}
+
+.play-btn{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;letter-spacing:0.14em;padding:14px 56px;border-radius:8px;border:1.5px solid rgba(245,200,66,0.5);background:rgba(245,200,66,0.08);color:#f5c842;cursor:pointer;transition:all 0.18s;margin-bottom:0.8rem;}
+.play-btn:hover{background:rgba(245,200,66,0.18);border-color:#f5c842;transform:scale(1.04);}
+.play-btn:active{transform:scale(0.96);}
+
+.hint{font-size:11px;color:rgba(255,255,255,0.2);letter-spacing:0.1em;text-transform:uppercase;}
+
+/* DEATH SCREEN */
+.d-stats{display:flex;gap:3rem;margin-bottom:1.8rem;}
+.d-stat{text-align:center;}
+.d-stat strong{display:block;font-family:'Bebas Neue',sans-serif;font-size:2.6rem;letter-spacing:0.04em;}
+.d-stat span{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.3);}
+.new-best{font-size:11px;letter-spacing:0.18em;text-transform:uppercase;color:#fbbf24;margin-bottom:1.4rem;display:none;}
+.new-best.show{display:block;}
+
+/* HOW TO PLAY */
+.how{display:flex;gap:1.5rem;margin-bottom:2rem;flex-wrap:wrap;justify-content:center;}
+.how-item{text-align:center;max-width:90px;}
+.how-icon{font-size:1.6rem;margin-bottom:4px;}
+.how-txt{font-size:11px;color:rgba(255,255,255,0.35);line-height:1.4;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="index.html">Denver<span>Games</span></a>
+  <button class="back" onclick="location.href='index.html'">← Back</button>
+</nav>
+
+<div id="gameArea">
+  <div id="timerBar"><div id="timerFill"></div></div>
+
+  <div id="hud">
+    <div class="hblock"><div class="hval" id="scoreEl">0</div><div class="hlbl">Score</div></div>
+    <div class="hblock"><div class="hval" id="comboCounter" style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:rgba(255,255,255,0.5);letter-spacing:0.06em;"></div><div class="hlbl">Combo</div></div>
+    <div class="hblock"><div class="hval" id="bestEl">0</div><div class="hlbl">Best</div></div>
+  </div>
+
+  <div id="comboEl"></div>
+  <canvas id="c"></canvas>
+
+  <!-- START -->
+  <div class="ov" id="ovStart">
+    <div class="ov-title">Tap<br><span class="grad">Surge</span></div>
+    <p class="ov-sub">Tap the circles before they vanish. Build combos. Don't miss — every miss costs time!</p>
+    <div class="how">
+      <div class="how-item"><div class="how-icon">🎯</div><div class="how-txt">Tap circles to score</div></div>
+      <div class="how-item"><div class="how-icon">⚡</div><div class="how-txt">Combos = bonus points</div></div>
+      <div class="how-item"><div class="how-icon">⏱️</div><div class="how-txt">Miss = lose time</div></div>
+      <div class="how-item"><div class="how-icon">💥</div><div class="how-txt">Red circles = danger</div></div>
+    </div>
+    <button class="play-btn" id="btnStart">Play Now</button>
+    <span class="hint">Click or tap to play</span>
+  </div>
+
+  <!-- DEAD -->
+  <div class="ov hide" id="ovDead">
+    <div class="ov-title">Time's<br><span class="crash">Up!</span></div>
+    <div class="d-stats">
+      <div class="d-stat"><strong id="dScore">0</strong><span>Score</span></div>
+      <div class="d-stat"><strong id="dCombo">0</strong><span>Best Combo</span></div>
+      <div class="d-stat"><strong id="dBest">0</strong><span>All-time Best</span></div>
+    </div>
+    <div class="new-best" id="newBest">✦ New All-time Best!</div>
+    <button class="play-btn" id="btnRetry">Play Again</button>
+  </div>
+</div>
+
+<script>
+const cv = document.getElementById('c');
+const cx = cv.getContext('2d');
+const area = document.getElementById('gameArea');
+
+let W, H;
+let circles = [], particles = [], floaters = [];
+let score = 0, combo = 0, bestCombo = 0;
+let timeLeft = 0, maxTime = 0;
+let running = false, raf;
+let best = +localStorage.getItem('ts_best') || 0;
+let spawnTimer = 0, spawnRate = 60, frame = 0;
+let level = 0;
+
+// Circle types
+const TYPES = [
+  { id:'normal', color:'#4fc3f7', glow:'rgba(79,195,247,0.5)', pts:10, timeBonus:1.2, timePenalty:0 },
+  { id:'fast',   color:'#a78bfa', glow:'rgba(167,139,250,0.5)', pts:20, timeBonus:1.5, timePenalty:0 },
+  { id:'big',    color:'#34d399', glow:'rgba(52,211,153,0.5)',  pts:5,  timeBonus:0.8, timePenalty:0 },
+  { id:'gold',   color:'#fbbf24', glow:'rgba(251,191,36,0.6)', pts:50, timeBonus:2.0, timePenalty:0 },
+  { id:'bomb',   color:'#ef4444', glow:'rgba(239,68,68,0.6)',  pts:-30,timeBonus:0,   timePenalty:3.5 },
+];
+
+function resize(){
+  W = cv.width = area.clientWidth;
+  H = cv.height = area.clientHeight;
+}
+
+function reset(){
+  circles=[]; particles=[]; floaters=[];
+  score=0; combo=0; bestCombo=0; frame=0;
+  spawnTimer=0; spawnRate=60; level=0;
+  maxTime = 15000;
+  timeLeft = maxTime;
+  upHUD();
+}
+
+function upHUD(){
+  document.getElementById('scoreEl').textContent = score;
+  document.getElementById('bestEl').textContent = best;
+  const cc = document.getElementById('comboCounter');
+  cc.textContent = combo >= 2 ? 'x'+combo : '';
+  cc.style.color = combo >= 5 ? '#fbbf24' : combo >= 3 ? '#a78bfa' : 'rgba(255,255,255,0.5)';
+}
+
+function timerColor(){
+  const pct = timeLeft/maxTime;
+  if(pct > 0.5) return '#4fc3f7';
+  if(pct > 0.25) return '#fbbf24';
+  return '#ef4444';
+}
+
+function spawnCircle(){
+  const margin = 60;
+  // weight: normal most common, bomb rare
+  const weights = [40,20,20,8,12];
+  let r = Math.random()*100, t = 0, typeIdx = 0;
+  for(let i=0;i<weights.length;i++){t+=weights[i];if(r<t){typeIdx=i;break;}}
+
+  const type = TYPES[typeIdx];
+  const radius = type.id==='big' ? 48+Math.random()*14 : type.id==='gold' ? 28+Math.random()*8 : 30+Math.random()*18;
+  const lifeMax = type.id==='fast' ? 1400+Math.random()*600 : type.id==='big' ? 3000+Math.random()*1000 : 2200+Math.random()*1000;
+
+  // avoid overlap
+  let x, y, tries=0, ok;
+  do {
+    x = margin + Math.random()*(W - margin*2);
+    y = margin + Math.random()*(H - margin*2 - 100) + 100;
+    ok = true;
+    for(const c of circles){
+      const dx=c.x-x, dy=c.y-y;
+      if(Math.sqrt(dx*dx+dy*dy) < c.r+radius+20){ok=false;break;}
+    }
+    tries++;
+  } while(!ok && tries<20);
+
+  circles.push({x,y,r:radius,type,life:lifeMax,lifeMax,
+    pulse:Math.random()*Math.PI*2,
+    scale:0, scaleTarget:1,
+    dying:false
+  });
+}
+
+function popCircle(c, hit){
+  // particles
+  const color = c.type.color;
+  const n = hit ? 22 : 10;
+  for(let i=0;i<n;i++){
+    const a=Math.random()*Math.PI*2, spd=1.5+Math.random()*5;
+    particles.push({x:c.x,y:c.y,vx:Math.cos(a)*spd,vy:Math.sin(a)*spd,
+      life:1,decay:0.02+Math.random()*0.04,r:2+Math.random()*4,color});
+  }
+}
+
+function showFloater(x,y,text,color){
+  floaters.push({x,y,text,color,life:1,vy:-1.8});
+}
+
+function hitCircle(c){
+  const pts = c.type.pts + (c.type.pts>0 ? combo*2 : 0);
+  score = Math.max(0, score + pts);
+  if(c.type.pts > 0){
+    combo++;
+    if(combo > bestCombo) bestCombo = combo;
+    timeLeft = Math.min(maxTime, timeLeft + c.type.timeBonus*1000);
+    const comboText = combo>=10?'GODLIKE! x'+combo:combo>=7?'INSANE! x'+combo:combo>=5?'MEGA x'+combo:combo>=3?'COMBO x'+combo:'';
+    if(comboText){
+      const el = document.getElementById('comboEl');
+      el.textContent=comboText;
+      const h=combo>=10?45:combo>=7?38:combo>=5?200:270;
+      el.style.color=`hsl(${h},100%,65%)`;
+      el.style.opacity='1';
+      setTimeout(()=>el.style.opacity='0',600);
+    }
+    showFloater(c.x,c.y-c.r-10,'+'+pts, combo>=5?'#fbbf24':c.type.color);
+  } else {
+    combo=0;
+    timeLeft = Math.max(0, timeLeft - c.type.timePenalty*1000);
+    showFloater(c.x,c.y-c.r-10,'BOMB! '+pts,'#ef4444');
+  }
+  popCircle(c,true);
+  upHUD();
+}
+
+function missCircle(c){
+  combo=0;
+  timeLeft = Math.max(0, timeLeft - 2000);
+  popCircle(c,false);
+  showFloater(c.x,c.y,'MISS!','rgba(239,68,68,0.9)');
+  upHUD();
+}
+
+// Drawing
+function drawBG(){
+  cx.fillStyle='#07070f';
+  cx.fillRect(0,0,W,H);
+  // subtle vignette
+  const vg=cx.createRadialGradient(W/2,H/2,H*0.2,W/2,H/2,H*0.8);
+  vg.addColorStop(0,'transparent');
+  vg.addColorStop(1,'rgba(0,0,0,0.45)');
+  cx.fillStyle=vg; cx.fillRect(0,0,W,H);
+}
+
+function drawCircle(c){
+  c.pulse+=0.06;
+  c.scale += (c.scaleTarget - c.scale)*0.18;
+  const pct = c.life/c.lifeMax;
+  const pulse = 1+Math.sin(c.pulse)*0.04;
+  const r = c.r*c.scale*pulse;
+  const alpha = c.dying ? c.life/500 : Math.min(1, c.scale);
+
+  cx.save();
+  cx.globalAlpha = alpha;
+
+  // outer glow ring
+  cx.shadowBlur=30; cx.shadowColor=c.type.glow;
+
+  // shrinking ring showing time left
+  cx.strokeStyle=c.type.color;
+  cx.lineWidth=3;
+  cx.beginPath();
+  cx.arc(c.x,c.y,r+6,0,Math.PI*2);
+  cx.stroke();
+
+  // timer arc
+  cx.strokeStyle='rgba(255,255,255,0.15)';
+  cx.lineWidth=4;
+  cx.beginPath();
+  cx.arc(c.x,c.y,r+10,-Math.PI/2,-Math.PI/2+Math.PI*2*pct);
+  cx.stroke();
+  cx.strokeStyle=c.type.color;
+  cx.lineWidth=4;
+  cx.beginPath();
+  cx.arc(c.x,c.y,r+10,-Math.PI/2,-Math.PI/2+Math.PI*2*pct);
+  cx.stroke();
+
+  // fill
+  const grad=cx.createRadialGradient(c.x-r*0.25,c.y-r*0.25,0,c.x,c.y,r);
+  grad.addColorStop(0,'rgba(255,255,255,0.25)');
+  grad.addColorStop(0.5,c.type.color+'99');
+  grad.addColorStop(1,c.type.color+'44');
+  cx.fillStyle=grad;
+  cx.shadowBlur=0;
+  cx.beginPath();
+  cx.arc(c.x,c.y,r,0,Math.PI*2);
+  cx.fill();
+
+  // icon
+  cx.shadowBlur=0;
+  cx.fillStyle='rgba(255,255,255,0.9)';
+  cx.font=`bold ${Math.floor(r*0.65)}px DM Sans`;
+  cx.textAlign='center';
+  cx.textBaseline='middle';
+  const icons={normal:'●',fast:'▲',big:'■',gold:'★',bomb:'✕'};
+  cx.fillText(icons[c.type.id],c.x,c.y);
+
+  cx.restore();
+}
+
+function drawParticles(){
+  for(let i=particles.length-1;i>=0;i--){
+    const p=particles[i];
+    p.x+=p.vx; p.y+=p.vy; p.vy+=0.1; p.life-=p.decay;
+    if(p.life<=0){particles.splice(i,1);continue;}
+    cx.save(); cx.globalAlpha=p.life; cx.fillStyle=p.color;
+    cx.shadowBlur=6; cx.shadowColor=p.color;
+    cx.beginPath(); cx.arc(p.x,p.y,p.r*p.life,0,Math.PI*2); cx.fill();
+    cx.restore();
+  }
+}
+
+function drawFloaters(){
+  for(let i=floaters.length-1;i>=0;i--){
+    const f=floaters[i];
+    f.y+=f.vy; f.life-=0.025;
+    if(f.life<=0){floaters.splice(i,1);continue;}
+    cx.save(); cx.globalAlpha=f.life;
+    cx.fillStyle=f.color;
+    cx.font=`500 ${Math.floor(16+f.life*4)}px DM Sans`;
+    cx.textAlign='center'; cx.textBaseline='middle';
+    cx.shadowBlur=8; cx.shadowColor=f.color;
+    cx.fillText(f.text,f.x,f.y);
+    cx.restore();
+  }
+}
+
+let lastTime = 0;
+function loop(ts){
+  const dt = Math.min(ts-lastTime, 50); lastTime=ts; frame++;
+
+  drawBG();
+
+  if(running){
+    timeLeft -= dt;
+    if(timeLeft<=0){timeLeft=0;die();return;}
+
+    // timer bar
+    const pct=timeLeft/maxTime;
+    document.getElementById('timerFill').style.width=(pct*100)+'%';
+    document.getElementById('timerFill').style.background=timerColor();
+
+    // level up
+    level = Math.floor(score/100);
+    spawnRate = Math.max(22, 60 - level*4);
+
+    // spawn
+    spawnTimer++;
+    if(spawnTimer>=spawnRate && circles.length<10){
+      spawnCircle(); spawnTimer=0;
+    }
+
+    // update circles
+    for(let i=circles.length-1;i>=0;i--){
+      const c=circles[i];
+      c.life-=dt;
+      if(c.life<=0){missCircle(c);circles.splice(i,1);}
+    }
+  }
+
+  for(const c of circles) drawCircle(c);
+  drawParticles();
+  drawFloaters();
+
+  raf=requestAnimationFrame(loop);
+}
+
+function die(){
+  running=false;
+  let newBest=false;
+  if(score>best){best=score;localStorage.setItem('ts_best',best);newBest=true;}
+  document.getElementById('dScore').textContent=score;
+  document.getElementById('dCombo').textContent=bestCombo;
+  document.getElementById('dBest').textContent=best;
+  document.getElementById('newBest').className='new-best'+(newBest?' show':'');
+  document.getElementById('ovDead').classList.remove('hide');
+}
+
+function startGame(){
+  reset();
+  running=true;
+  lastTime=performance.now();
+  document.getElementById('ovStart').classList.add('hide');
+  document.getElementById('ovDead').classList.add('hide');
+  cancelAnimationFrame(raf);
+  raf=requestAnimationFrame(loop);
+  // spawn 2 immediately
+  setTimeout(spawnCircle,100);
+  setTimeout(spawnCircle,400);
+}
+
+// Click/tap
+function getPos(e){
+  const rect=cv.getBoundingClientRect();
+  if(e.touches) return{x:e.touches[0].clientX-rect.left,y:e.touches[0].clientY-rect.top};
+  return{x:e.clientX-rect.left,y:e.clientY-rect.top};
+}
+
+function handleTap(e){
+  if(!running)return;
+  e.preventDefault();
+  const{x,y}=getPos(e);
+  let hit=false;
+  // check from top (last spawned = on top)
+  for(let i=circles.length-1;i>=0;i--){
+    const c=circles[i];
+    const dx=c.x-x,dy=c.y-y;
+    if(Math.sqrt(dx*dx+dy*dy)<c.r*c.scale+8){
+      hitCircle(c); circles.splice(i,1); hit=true; break;
+    }
+  }
+}
+
+cv.addEventListener('mousedown',handleTap);
+cv.addEventListener('touchstart',handleTap,{passive:false});
+document.getElementById('btnStart').addEventListener('click',startGame);
+document.getElementById('btnRetry').addEventListener('click',startGame);
+window.addEventListener('resize',()=>{resize();});
+
+document.getElementById('bestEl').textContent=best;
+resize();
+lastTime=performance.now();
+raf=requestAnimationFrame(loop);
+</script>
+</body>
+</html>

@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Denver Games — Best Games During School</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --surface2: #1a1a1a;
+  --border: rgba(255,255,255,0.07);
+  --text: #f0ede8;
+  --muted: #888580;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* NAV */
+nav {
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  background: rgba(10,10,10,0.94);
+  backdrop-filter: blur(12px);
+  z-index: 100;
+}
+.logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.08em;
+  color: var(--text);
+  text-decoration: none;
+  cursor: pointer;
+}
+.logo span { color: #e8533a; }
+nav p { font-size: 13px; color: var(--muted); letter-spacing: 0.04em; }
+
+/* HERO */
+.hero {
+  padding: 5rem 2rem 4rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -60px; left: 50%;
+  transform: translateX(-50%);
+  width: 600px; height: 300px;
+  background: radial-gradient(ellipse, rgba(232,83,58,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #e8533a;
+  margin-bottom: 1.2rem;
+  font-weight: 500;
+}
+.hero h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3.5rem, 10vw, 7rem);
+  line-height: 0.95;
+  letter-spacing: 0.02em;
+  margin-bottom: 1.2rem;
+}
+.hero h1 em { font-style: normal; color: #e8533a; }
+.hero p {
+  font-size: 1rem;
+  color: var(--muted);
+  max-width: 420px;
+  margin: 0 auto 2.5rem;
+  line-height: 1.7;
+}
+.hero-stats {
+  display: flex;
+  gap: 2.5rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.hero-stats div { text-align: center; }
+.hero-stats strong {
+  display: block;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 0.04em;
+}
+.hero-stats span {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* SECTION HEADER */
+.section-header {
+  padding: 3rem 2rem 1.5rem;
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  border-top: 1px solid var(--border);
+}
+.section-header h2 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.2rem;
+  letter-spacing: 0.06em;
+  line-height: 1;
+}
+.section-header p { font-size: 13px; color: var(--muted); padding-bottom: 3px; }
+
+/* CATEGORIES GRID */
+.cat-wrap { padding: 0 2rem 5rem; }
+.categories {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.cat-card {
+  background: var(--surface);
+  padding: 2rem;
+  cursor: pointer;
+  display: block;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.2s;
+  text-decoration: none;
+}
+.cat-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.cat-card:hover { background: var(--surface2); }
+.cat-card:hover::before { opacity: 1; }
+.cat-card:hover .cat-arrow { transform: translate(3px,-3px); color: var(--text); }
+
+.cat-icon { font-size: 2.2rem; margin-bottom: 1rem; display: block; line-height: 1; }
+.cat-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.5rem;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.4rem;
+}
+.cat-desc { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 1.2rem; }
+.cat-tag {
+  display: inline-block;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-weight: 500;
+  border: 1px solid;
+}
+.cat-arrow {
+  position: absolute;
+  top: 1.75rem; right: 1.75rem;
+  font-size: 1.1rem;
+  color: var(--muted);
+  transition: transform 0.2s, color 0.2s;
+}
+
+/* CATEGORY THEMES */
+.c-arcade .cat-name{color:#f5c842;} .c-arcade .cat-tag{color:#f5c842;border-color:rgba(245,200,66,0.3);background:rgba(245,200,66,0.06);}
+.c-arcade::before{background:radial-gradient(ellipse at top left,rgba(245,200,66,0.07),transparent 60%);}
+
+.c-shooter .cat-name{color:#e8533a;} .c-shooter .cat-tag{color:#e8533a;border-color:rgba(232,83,58,0.3);background:rgba(232,83,58,0.06);}
+.c-shooter::before{background:radial-gradient(ellipse at top left,rgba(232,83,58,0.08),transparent 60%);}
+
+.c-horror .cat-name{color:#b36eff;} .c-horror .cat-tag{color:#b36eff;border-color:rgba(179,110,255,0.3);background:rgba(179,110,255,0.06);}
+.c-horror::before{background:radial-gradient(ellipse at top left,rgba(179,110,255,0.07),transparent 60%);}
+
+.c-puzzle .cat-name{color:#5bcffa;} .c-puzzle .cat-tag{color:#5bcffa;border-color:rgba(91,207,250,0.3);background:rgba(91,207,250,0.06);}
+.c-puzzle::before{background:radial-gradient(ellipse at top left,rgba(91,207,250,0.07),transparent 60%);}
+
+.c-racing .cat-name{color:#ff8c42;} .c-racing .cat-tag{color:#ff8c42;border-color:rgba(255,140,66,0.3);background:rgba(255,140,66,0.06);}
+.c-racing::before{background:radial-gradient(ellipse at top left,rgba(255,140,66,0.07),transparent 60%);}
+
+.c-survival .cat-name{color:#6ddb82;} .c-survival .cat-tag{color:#6ddb82;border-color:rgba(109,219,130,0.3);background:rgba(109,219,130,0.06);}
+.c-survival::before{background:radial-gradient(ellipse at top left,rgba(109,219,130,0.07),transparent 60%);}
+
+.c-cards .cat-name{color:#f5a8d4;} .c-cards .cat-tag{color:#f5a8d4;border-color:rgba(245,168,212,0.3);background:rgba(245,168,212,0.06);}
+.c-cards::before{background:radial-gradient(ellipse at top left,rgba(245,168,212,0.07),transparent 60%);}
+
+.c-strategy .cat-name{color:#f5c842;} .c-strategy .cat-tag{color:#f5c842;border-color:rgba(245,200,66,0.3);background:rgba(245,200,66,0.06);}
+.c-strategy::before{background:radial-gradient(ellipse at top left,rgba(245,200,66,0.07),transparent 60%);}
+
+.c-sports .cat-name{color:#5bcffa;} .c-sports .cat-tag{color:#5bcffa;border-color:rgba(91,207,250,0.3);background:rgba(91,207,250,0.06);}
+.c-sports::before{background:radial-gradient(ellipse at top left,rgba(91,207,250,0.07),transparent 60%);}
+
+.c-adventure .cat-name{color:#ff8c42;} .c-adventure .cat-tag{color:#ff8c42;border-color:rgba(255,140,66,0.3);background:rgba(255,140,66,0.06);}
+.c-adventure::before{background:radial-gradient(ellipse at top left,rgba(255,140,66,0.07),transparent 60%);}
+
+/* SUBPAGES */
+.page { display: none; }
+.page.active { display: block; }
+#mainPage.active { display: block; }
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 1.5rem 2rem;
+  border: none;
+  background: none;
+  font-family: inherit;
+  transition: color 0.2s;
+}
+.back-btn:hover { color: var(--text); }
+
+/* SUB HERO */
+.sub-hero {
+  padding: 3rem 2rem 2.5rem;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.sub-hero::before { content:''; position:absolute; inset:0; pointer-events:none; }
+.sub-label { font-size:11px; letter-spacing:0.2em; text-transform:uppercase; margin-bottom:0.8rem; font-weight:500; }
+.sub-hero h2 { font-family:'Bebas Neue',sans-serif; font-size:clamp(2.5rem,8vw,5rem); line-height:0.95; letter-spacing:0.03em; margin-bottom:0.8rem; }
+.sub-hero p { font-size:14px; color:var(--muted); max-width:460px; line-height:1.6; }
+
+/* SUB THEMES */
+.th-arcade .sub-hero::before{background:radial-gradient(ellipse at top right,rgba(245,200,66,0.1),transparent 60%);} .th-arcade .sub-label{color:#f5c842;} .th-arcade .sub-hero h2{color:#f5c842;}
+.th-shooter .sub-hero::before{background:radial-gradient(ellipse at top right,rgba(232,83,58,0.12),transparent 60%);} .th-shooter .sub-label{color:#e8533a;} .th-shooter .sub-hero h2{color:#e8533a;}
+.th-horror .sub-hero::before{background:radial-gradient(ellipse at top right,rgba(179,110,255,0.1),transparent 60%);} .th-horror .sub-label{color:#b36eff;} .th-horror .sub-hero h2{color:#b36eff;}
+.th-puzzle .sub-hero::before{background:radial-gradient(ellipse at top right,rgba(91,207,250,0.1),transparent 60%);} .th-puzzle .sub-label{color:#5bcffa;} .th-puzzle .sub-hero h2{color:#5bcffa;}
+.th-racing .sub-hero::before{background:radial-gradient(ellipse at top right,rgba(255,140,66,0.1),transparent 60%);} .th-racing .sub-label{color:#ff8c42;} .th-racing .sub-hero h2{color:#ff8c42;}
+.th-survival .sub-hero::before{background:radial-gradient(ellipse at top right,rgba(109,219,130,0.1),transparent 60%);} .th-survival .sub-label{color:#6ddb82;} .th-survival .sub-hero h2{color:#6ddb82;}
+.th-cards .sub-hero::before{background:radial-gradient(ellipse at top right,rgba(245,168,212,0.1),transparent 60%);} .th-cards .sub-label{color:#f5a8d4;} .th-cards .sub-hero h2{color:#f5a8d4;}
+.th-strategy .sub-hero::before{background:radial-gradient(ellipse at top right,rgba(245,200,66,0.1),transparent 60%);} .th-strategy .sub-label{color:#f5c842;} .th-strategy .sub-hero h2{color:#f5c842;}
+.th-sports .sub-hero::before{background:radial-gradient(ellipse at top right,rgba(91,207,250,0.1),transparent 60%);} .th-sports .sub-label{color:#5bcffa;} .th-sports .sub-hero h2{color:#5bcffa;}
+.th-adventure .sub-hero::before{background:radial-gradient(ellipse at top right,rgba(255,140,66,0.1),transparent 60%);} .th-adventure .sub-label{color:#ff8c42;} .th-adventure .sub-hero h2{color:#ff8c42;}
+
+/* GAME GRID */
+.game-grid { padding:2rem; display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; }
+
+.coming-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 2rem;
+  opacity: 0.45;
+  position: relative;
+  overflow: hidden;
+}
+.coming-icon { font-size:2rem; margin-bottom:1rem; display:block; }
+.coming-title { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; letter-spacing:0.05em; margin-bottom:0.4rem; color:var(--muted); }
+.coming-desc { font-size:12px; color:var(--muted); line-height:1.5; }
+.lock { position:absolute; top:1rem; right:1rem; font-size:0.9rem; }
+
+/* FOOTER */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 2rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+}
+footer strong { color: var(--text); font-weight: 500; }
+
+@media(max-width:600px){
+  .hero{padding:3rem 1.25rem 2.5rem;}
+  .cat-wrap{padding:0 1.25rem 4rem;}
+  .section-header{padding:2rem 1.25rem 1.25rem;}
+  .game-grid{padding:1.25rem;}
+  .sub-hero{padding:2rem 1.25rem;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <span class="logo" onclick="show('main')">Denver<span>Games</span></span>
+  <p>Best games during school</p>
+</nav>
+
+<!-- MAIN PAGE -->
+<div id="mainPage" class="page active">
+  <section class="hero">
+    <p class="hero-eyebrow">Free · No download · Play instantly</p>
+    <h1>Best Games<br><em>During School.</em></h1>
+    <p>The ultimate free browser game collection. No installs, no accounts — just open a tab and play. Founded by <strong style="color:var(--text);">denverd6429</strong>.</p>
+    <div class="hero-stats">
+      <div><strong>15+</strong><span>Games</span></div>
+      <div><strong>10</strong><span>Categories</span></div>
+      <div><strong>0$</strong><span>Forever free</span></div>
+    </div>
+  </section>
+
+  <div class="section-header">
+    <h2>Browse Categories</h2>
+    <p>Pick your genre and start playing</p>
+  </div>
+
+  <div class="cat-wrap">
+    <div class="categories">
+
+      <div class="cat-card c-arcade" onclick="show('arcade')">
+        <span class="cat-icon">🕹️</span>
+        <div class="cat-name">Arcade</div>
+        <p class="cat-desc">Fast reflexes, instant fun. Classic feel, modern twists.</p>
+        <span class="cat-tag">Coming soon</span>
+        <span class="cat-arrow">↗</span>
+      </div>
+
+      <div class="cat-card c-shooter" onclick="show('shooter')">
+        <span class="cat-icon">🎯</span>
+        <div class="cat-name">Shooters</div>
+        <p class="cat-desc">Aim, shoot, survive. Top-down and first-person chaos.</p>
+        <span class="cat-tag">Coming soon</span>
+        <span class="cat-arrow">↗</span>
+      </div>
+
+      <div class="cat-card c-horror" onclick="show('horror')">
+        <span class="cat-icon">👻</span>
+        <div class="cat-name">Horror</div>
+        <p class="cat-desc">Dare to play in the dark. Atmospheric and unsettling.</p>
+        <span class="cat-tag">Coming soon</span>
+        <span class="cat-arrow">↗</span>
+      </div>
+
+      <div class="cat-card c-puzzle" onclick="show('puzzle')">
+        <span class="cat-icon">🧩</span>
+        <div class="cat-name">Puzzle</div>
+        <p class="cat-desc">Think hard, solve smart. Logic games for sharp minds.</p>
+        <span class="cat-tag">Coming soon</span>
+        <span class="cat-arrow">↗</span>
+      </div>
+
+      <div class="cat-card c-racing" onclick="show('racing')">
+        <span class="cat-icon">🏎️</span>
+        <div class="cat-name">Racing</div>
+        <p class="cat-desc">Speed, drift, and adrenaline. Hit the gas and don't look back.</p>
+        <span class="cat-tag">Coming soon</span>
+        <span class="cat-arrow">↗</span>
+      </div>
+
+      <div class="cat-card c-survival" onclick="show('survival')">
+        <span class="cat-icon">🪓</span>
+        <div class="cat-name">Survival</div>
+        <p class="cat-desc">Limited resources, unlimited danger. How long can you last?</p>
+        <span class="cat-tag">Coming soon</span>
+        <span class="cat-arrow">↗</span>
+      </div>
+
+      <div class="cat-card c-cards" onclick="show('cards')">
+        <span class="cat-icon">🃏</span>
+        <div class="cat-name">Card Games</div>
+        <p class="cat-desc">Bluff, strategy, and luck. Classic card games reimagined.</p>
+        <span class="cat-tag">Coming soon</span>
+        <span class="cat-arrow">↗</span>
+      </div>
+
+      <div class="cat-card c-strategy" onclick="show('strategy')">
+        <span class="cat-icon">♟️</span>
+        <div class="cat-name">Strategy</div>
+        <p class="cat-desc">Plan every move. Outthink your opponent, control the board.</p>
+        <span class="cat-tag">Coming soon</span>
+        <span class="cat-arrow">↗</span>
+      </div>
+
+      <div class="cat-card c-sports" onclick="show('sports')">
+        <span class="cat-icon">⚽</span>
+        <div class="cat-name">Sports</div>
+        <p class="cat-desc">Football, basketball, and more — no gym required.</p>
+        <span class="cat-tag">Coming soon</span>
+        <span class="cat-arrow">↗</span>
+      </div>
+
+      <div class="cat-card c-adventure" onclick="show('adventure')">
+        <span class="cat-icon">🗺️</span>
+        <div class="cat-name">Adventure</div>
+        <p class="cat-desc">Explore worlds, find secrets. Story-driven browser adventures.</p>
+        <span class="cat-tag">Coming soon</span>
+        <span class="cat-arrow">↗</span>
+      </div>
+
+    </div>
+  </div>
+
+  <footer>
+    <p>Founded by <strong>denverd6429</strong> · <strong>Denver Games</strong> · Best games during school · Free forever</p>
+  </footer>
+</div>
+
+<!-- ARCADE -->
+<div id="arcadePage" class="page th-arcade">
+  <button class="back-btn" onclick="show('main')">← Back to all categories</button>
+  <div class="sub-hero">
+    <p class="sub-label">⚡ Fast · Reflex · Skill-based</p>
+    <h2>Arcade</h2>
+    <p>No story, no fuss — just pure reaction-based fun. Easy to start, impossible to put down.</p>
+  </div>
+  <div class="game-grid">
+    <div class="coming-card"><span class="coming-icon">🕹️</span><div class="coming-title">Game coming soon</div><p class="coming-desc">First arcade game dropping soon. Check back!</p><span class="lock">🔒</span></div>
+    <div class="coming-card"><span class="coming-icon">⚡</span><div class="coming-title">Game coming soon</div><p class="coming-desc">More arcade action on the way.</p><span class="lock">🔒</span></div>
+  </div>
+</div>
+
+<!-- SHOOTER -->
+<div id="shooterPage" class="page th-shooter">
+  <button class="back-btn" onclick="show('main')">← Back to all categories</button>
+  <div class="sub-hero">
+    <p class="sub-label">🎯 Aim · Shoot · Dominate</p>
+    <h2>Shooters</h2>
+    <p>Lock in, aim down, and eliminate everything in sight. Top-down and tactical — no mercy.</p>
+  </div>
+  <div class="game-grid">
+    <div class="coming-card"><span class="coming-icon">🎯</span><div class="coming-title">Game coming soon</div><p class="coming-desc">First shooter dropping soon.</p><span class="lock">🔒</span></div>
+    <div class="coming-card"><span class="coming-icon">💥</span><div class="coming-title">Game coming soon</div><p class="coming-desc">More shooters on the way.</p><span class="lock">🔒</span></div>
+  </div>
+</div>
+
+<!-- HORROR -->
+<div id="horrorPage" class="page th-horror">
+  <button class="back-btn" onclick="show('main')">← Back to all categories</button>
+  <div class="sub-hero">
+    <p class="sub-label">👻 Dark · Atmospheric · Unsettling</p>
+    <h2>Horror</h2>
+    <p>Play in the dark. Quiet atmospheres, sudden dread, no hand-holding.</p>
+  </div>
+  <div class="game-grid">
+    <div class="coming-card"><span class="coming-icon">🕯️</span><div class="coming-title">Game coming soon</div><p class="coming-desc">First horror game dropping soon.</p><span class="lock">🔒</span></div>
+    <div class="coming-card"><span class="coming-icon">🚪</span><div class="coming-title">Game coming soon</div><p class="coming-desc">Dare to enter. Coming soon.</p><span class="lock">🔒</span></div>
+  </div>
+</div>
+
+<!-- PUZZLE -->
+<div id="puzzlePage" class="page th-puzzle">
+  <button class="back-btn" onclick="show('main')">← Back to all categories</button>
+  <div class="sub-hero">
+    <p class="sub-label">🧩 Logic · Think · Solve</p>
+    <h2>Puzzle</h2>
+    <p>No time pressure — just clean logic. These games reward careful thinking over quick reflexes.</p>
+  </div>
+  <div class="game-grid">
+    <div class="coming-card"><span class="coming-icon">🔢</span><div class="coming-title">Game coming soon</div><p class="coming-desc">First puzzle game dropping soon.</p><span class="lock">🔒</span></div>
+    <div class="coming-card"><span class="coming-icon">🎨</span><div class="coming-title">Game coming soon</div><p class="coming-desc">More puzzles on the way.</p><span class="lock">🔒</span></div>
+  </div>
+</div>
+
+<!-- RACING -->
+<div id="racingPage" class="page th-racing">
+  <button class="back-btn" onclick="show('main')">← Back to all categories</button>
+  <div class="sub-hero">
+    <p class="sub-label">🏎️ Speed · Drift · Adrenaline</p>
+    <h2>Racing</h2>
+    <p>Hit the gas and don't look back. Fast cars, sharp corners, no mercy.</p>
+  </div>
+  <div class="game-grid">
+    <div class="coming-card"><span class="coming-icon">🏎️</span><div class="coming-title">Game coming soon</div><p class="coming-desc">First racing game dropping soon.</p><span class="lock">🔒</span></div>
+  </div>
+</div>
+
+<!-- SURVIVAL -->
+<div id="survivalPage" class="page th-survival">
+  <button class="back-btn" onclick="show('main')">← Back to all categories</button>
+  <div class="sub-hero">
+    <p class="sub-label">🪓 Survive · Craft · Endure</p>
+    <h2>Survival</h2>
+    <p>Limited resources, unlimited danger. How long can you last?</p>
+  </div>
+  <div class="game-grid">
+    <div class="coming-card"><span class="coming-icon">🪓</span><div class="coming-title">Game coming soon</div><p class="coming-desc">First survival game dropping soon.</p><span class="lock">🔒</span></div>
+  </div>
+</div>
+
+<!-- CARDS -->
+<div id="cardsPage" class="page th-cards">
+  <button class="back-btn" onclick="show('main')">← Back to all categories</button>
+  <div class="sub-hero">
+    <p class="sub-label">🃏 Bluff · Strategy · Luck</p>
+    <h2>Card Games</h2>
+    <p>Classic card games reimagined for the browser. Easy to learn, hard to master.</p>
+  </div>
+  <div class="game-grid">
+    <div class="coming-card"><span class="coming-icon">🃏</span><div class="coming-title">Game coming soon</div><p class="coming-desc">First card game dropping soon.</p><span class="lock">🔒</span></div>
+  </div>
+</div>
+
+<!-- STRATEGY -->
+<div id="strategyPage" class="page th-strategy">
+  <button class="back-btn" onclick="show('main')">← Back to all categories</button>
+  <div class="sub-hero">
+    <p class="sub-label">♟️ Plan · Outthink · Conquer</p>
+    <h2>Strategy</h2>
+    <p>Plan every move. Outthink your opponent and control the board.</p>
+  </div>
+  <div class="game-grid">
+    <div class="coming-card"><span class="coming-icon">♟️</span><div class="coming-title">Game coming soon</div><p class="coming-desc">First strategy game dropping soon.</p><span class="lock">🔒</span></div>
+  </div>
+</div>
+
+<!-- SPORTS -->
+<div id="sportsPage" class="page th-sports">
+  <button class="back-btn" onclick="show('main')">← Back to all categories</button>
+  <div class="sub-hero">
+    <p class="sub-label">⚽ Play · Score · Win</p>
+    <h2>Sports</h2>
+    <p>Football, basketball, and more — no gym required.</p>
+  </div>
+  <div class="game-grid">
+    <div class="coming-card"><span class="coming-icon">⚽</span><div class="coming-title">Game coming soon</div><p class="coming-desc">First sports game dropping soon.</p><span class="lock">🔒</span></div>
+  </div>
+</div>
+
+<!-- ADVENTURE -->
+<div id="adventurePage" class="page th-adventure">
+  <button class="back-btn" onclick="show('main')">← Back to all categories</button>
+  <div class="sub-hero">
+    <p class="sub-label">🗺️ Explore · Discover · Survive</p>
+    <h2>Adventure</h2>
+    <p>Explore worlds, find secrets. Story-driven browser adventures.</p>
+  </div>
+  <div class="game-grid">
+    <div class="coming-card"><span class="coming-icon">🗺️</span><div class="coming-title">Game coming soon</div><p class="coming-desc">First adventure game dropping soon.</p><span class="lock">🔒</span></div>
+  </div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const target = id === 'main' ? 'mainPage' : id + 'Page';
+  document.getElementById(target).classList.add('active');
+  window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
